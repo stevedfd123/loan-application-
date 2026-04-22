@@ -1205,7 +1205,14 @@
             
             // 🔥 Payment Screen - USING VPA/UPI FROM COLUMN Q
             document.getElementById('amount').value = totalRepayment;
-            document.getElementById('upi').value = vpaUpi || 'merchant@upi';  // 🔥 Using VPA/UPI column with fallback
+            const finalUpi = vpaUpi || 
+                             currentUserData['VPA/UPI'] || 
+                             currentUserData['VPA / UPI'] || 
+                             currentUserData['UPI'] || 
+                             'merchant@upi';
+
+            document.getElementById('upi').value = finalUpi;
+
             
             console.log('✅ ALL DATA POPULATED FROM GOOGLE SHEET!');
             console.log('💳 VPA/UPI set to:', vpaUpi);
