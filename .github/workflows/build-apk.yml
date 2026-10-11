@@ -54,10 +54,44 @@ jobs:
 
       - name: Collect APKs
         run: |
-          mkdir -p apk-out
+          mkdir -p apk-out dist
           cp android/app/build/outputs/apk/debug/app-debug.apk apk-out/loan-app-debug.apk
           cp android/app/build/outputs/apk/release/app-release.apk apk-out/loan-app-release.apk
+          cp apk-out/loan-app-release.apk dist/loan-app-release.apk
+          cp apk-out/loan-app-debug.apk dist/loan-app-debug.apk
           ls -la apk-out
+
+      # Guard against the WebView shell shipping without the web app inside it.
+      - name: Verify web assets are inside the APK
+        run: |
+          set -euo pipefail
+          listing="$(unzip -l apk-out/loan-app-release.apk || true)"
+          echo "$listing"
+          if ! echo "$listing" | grep -q 'assets/www/index.html'; then
+            echo "::error::assets/www/index.html is missing from the APK - the syncWebApp Gradle task did not run"
+            exit 1
+          fi
+          if [ "$(echo "$listing" | awk '/assets\/www\/index.html/{print $1}')" -lt 40000 ]; then
+            echo "::error::assets/www/index.html looks truncated"
+            exit 1
+          fi
+          echo "OK: the web app is packaged inside the APK"
+
+      - name: Commit APKs back to the branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/loan-app-release.apk dist/loan-app-debug.apk
+          if git diff --cached --quiet; then
+            echo "APKs unchanged, nothing to commit"
+          else
+            git commit -m "chore: APK build ${{ github.sha }} [skip ci]"
+            git push origin "HEAD:$BRANCH"
+          fi
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
