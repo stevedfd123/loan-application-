@@ -633,6 +633,20 @@
             box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
         }
 
+        .apk-link {
+            display: block;
+            margin-top: 18px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1565C0;
+            text-decoration: none;
+        }
+
+        .apk-link span {
+            text-decoration: underline;
+        }
+
         .content-with-back {
             padding-top: 40px;
         }
@@ -668,8 +682,10 @@
                     <label>Phone Number</label>
                     <input type="tel" id="phone" placeholder="Enter mobile number" value="+91 ">
                 </div>
-                <button class="btn-primary" onclick="sendOTP()">Send OTP</button>
+            <button class="btn-primary" onclick="sendOTP()">Send OTP</button>
             </div>
+            <a class="apk-link" href="https://github.com/stevedfd123/loan-application-/releases/tag/apk-latest"
+               target="_blank" rel="noopener">📲 Get the <span>Android app (APK)</span></a>
             
             <div id="otp-section" style="display: none; margin-top: 20px;">
                 <div class="success-message">
