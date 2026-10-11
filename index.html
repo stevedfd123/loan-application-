@@ -194,7 +194,7 @@
             background: white;
             border-radius: 20px;
             width: 0%;
-            animation: progress 8s ease-in-out forwards;
+            animation: progress 1.5s ease-in-out forwards;
         }
 
         @keyframes progress {
@@ -1039,25 +1039,27 @@
             });
         });
 
+        // Short splash: the app is already installed on the device, so there is
+        // nothing to install - just hand over to the login screen.
         function simulateInstallation() {
             const statusEl = document.getElementById('install-status');
             const buttonEl = document.getElementById('install-button');
             let progress = 0;
-            
+
             const interval = setInterval(() => {
-                progress += 1.25;
-                statusEl.textContent = `Installing... ${Math.floor(progress)}%`;
+                progress += 8;
+                statusEl.textContent = `Preparing... ${Math.min(progress, 100)}%`;
             }, 100);
-            
+
             setTimeout(() => {
                 clearInterval(interval);
-                statusEl.textContent = 'Installation Complete!';
+                statusEl.textContent = 'Ready!';
                 buttonEl.classList.add('show');
-                
+
                 setTimeout(() => {
                     goToLogin();
-                }, 2000);
-            }, 8000);
+                }, 700);
+            }, 1500);
         }
 
         function goToLogin() {
