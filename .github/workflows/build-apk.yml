@@ -72,18 +72,30 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           BRANCH: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
         run: |
-          gh release delete apk-latest --cleanup-tag -y 2>/dev/null || true
+          set -euo pipefail
+
+          cat > /tmp/notes.md <<'EOF'
+          Built from branch `BRANCH` @ `SHA`.
+
+          - `loan-app-release.apk` — installable release build
+          - `loan-app-debug.apk` — debug build
+
+          Install: copy the APK to the phone, tap it, then allow
+          "install unknown apps".
+          EOF
+          sed -i "s|BRANCH|$BRANCH|; s|SHA|$SHA|" /tmp/notes.md
+
+          # Remove the previous rolling release (and its tag) so the URL always
+          # points at the newest build.
+          gh release delete apk-latest --cleanup-tag -y || true
           gh release create apk-latest \
             --target "$BRANCH" \
             --title "Loan App APK" \
-            --notes "Built from \`$BRANCH\` @ \`${{ github.sha }}\`.
-
-          - \`loan-app-release.apk\` — installable release build
-          - \`loan-app-debug.apk\` — debug build
-
-          Install: copy to the phone, tap it, allow \"install unknown apps\"." \
-            apk-out/loan-app-release.apk apk-out/loan-app-debug.apk --clobber
+            --notes-file /tmp/notes.md \
+            apk-out/loan-app-release.apk \
+            apk-out/loan-app-debug.apk
 
       - name: Summary
         run: |
