@@ -1,7 +1,10 @@
 name: Build APK
 
-# Builds the Android APK from the published web app (index.html) and attaches
-# it to the workflow run as a downloadable artifact.
+# Builds the Android APK from the published web app (index.html), attaches it to
+# the workflow run as an artifact, and publishes it as a GitHub Release so there
+# is a stable public download link:
+#
+#   https://github.com/stevedfd123/loan-application-/releases/download/apk-latest/loan-app-release.apk
 on:
   push:
     branches:
@@ -11,11 +14,9 @@ on:
       - 'android/**'
       - '.github/workflows/build-apk.yml'
   workflow_dispatch:
-    inputs:
-      ref:
-        description: 'Branch or ref to build'
-        required: true
-        default: 'arena/d36f5699-loan-application'
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -66,13 +67,32 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      # Keep one rolling release so the download URL never changes.
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          gh release delete apk-latest --cleanup-tag -y 2>/dev/null || true
+          gh release create apk-latest \
+            --target "$BRANCH" \
+            --title "Loan App APK" \
+            --notes "Built from \`$BRANCH\` @ \`${{ github.sha }}\`.
+
+          - \`loan-app-release.apk\` — installable release build
+          - \`loan-app-debug.apk\` — debug build
+
+          Install: copy to the phone, tap it, allow \"install unknown apps\"." \
+            apk-out/loan-app-release.apk apk-out/loan-app-debug.apk --clobber
+
       - name: Summary
         run: |
           {
             echo "### APK build finished";
             echo "";
-            echo "Download from the **Artifacts** section of this run:";
+            echo "**Download (permanent link):**";
             echo "";
-            echo "- \`loan-app-release.apk\` - installable release build";
-            echo "- \`loan-app-debug.apk\` - debug build";
+            echo "https://github.com/stevedfd123/loan-application-/releases/download/apk-latest/loan-app-release.apk";
+            echo "";
+            echo "Also attached to this run as the \`loan-app-apk\` artifact.";
           } >> "$GITHUB_STEP_SUMMARY"
